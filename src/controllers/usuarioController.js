@@ -1,5 +1,5 @@
 import pool from "../database/db.js";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
 
 const cadastrarUsuario = async (req, res) => {
@@ -14,7 +14,7 @@ const cadastrarUsuario = async (req, res) => {
 
     res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result.rows[0] });
   } catch (error) {
-    console.error("Erro ao cadastrar usuário:", error); // <- mostra o erro real
+    console.error("Erro ao cadastrar usuário:", error);
     res.status(500).json({ error: "Erro ao cadastrar usuário" });
   }  
 };
