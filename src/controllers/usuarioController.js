@@ -7,6 +7,7 @@ const cadastrarUsuario = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(senha, 10);
+    data_nascimento = formatDateForDatabase(data_nascimento);
     const result = await pool.query(
       "INSERT INTO barber.usuarios (nome, data_nascimento, email, senha, endereco, telefone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
       [nome, data_nascimento, email, hashedPassword, endereco, telefone]
@@ -17,6 +18,10 @@ const cadastrarUsuario = async (req, res) => {
     console.error("Erro ao cadastrar usuário:", error);
     res.status(500).json({ error: "Erro ao cadastrar usuário" });
   }  
+};
+const formatDateForDatabase = (dateString) => {
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month}-${day}`; // Retorna no formato yyyy-mm-dd
 };
 
 const loginUsuario = async (req, res) => {
