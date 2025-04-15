@@ -2,26 +2,28 @@ import pool from "../database/db.js";
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
 
+const formatDateForDatabase = (dateString) => {
+  const [day, month, year] = dateString.split('/');
+  return `${year}-${month}-${day}`; 
+};
+
 const cadastrarUsuario = async (req, res) => {
   const { nome, data_nascimento, email, senha, endereco, telefone } = req.body;
 
   try {
+    const dataFormatada = formatDateForDatabase(data_nascimento);
+
     const hashedPassword = await bcrypt.hash(senha, 10);
-    data_nascimento = formatDateForDatabase(data_nascimento);
     const result = await pool.query(
       "INSERT INTO barber.usuarios (nome, data_nascimento, email, senha, endereco, telefone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [nome, data_nascimento, email, hashedPassword, endereco, telefone]
+      [nome, dataFormatada, email, hashedPassword, endereco, telefone]
     );
 
     res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result.rows[0] });
   } catch (error) {
     console.error("Erro ao cadastrar usuário:", error);
     res.status(500).json({ error: "Erro ao cadastrar usuário" });
-  }  
-};
-const formatDateForDatabase = (dateString) => {
-    const [day, month, year] = dateString.split('/');
-    return `${year}-${month}-${day}`; // Retorna no formato yyyy-mm-dd
+  }
 };
 
 const loginUsuario = async (req, res) => {

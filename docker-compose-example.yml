@@ -2,12 +2,12 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:16
+    image: postgres:17.4
     container_name: postgres_barber
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 8924743
+      POSTGRES_PASSWORD: SENHAAQUI
       POSTGRES_DB: barberdb
     ports:
       - "5432:5432"
@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://postgres:8924743@db:5432/barberdb
+      DATABASE_URL: postgres://postgres:SENHAAQUI@db:5432/barberdb
       JWT_SECRET: chavesecretaprapensardepois
 
 volumes:
