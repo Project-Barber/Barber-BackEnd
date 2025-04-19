@@ -48,36 +48,40 @@ Este repositório contém o **back-end** da aplicação de agendamento de horár
 ---
 
 ### 🛠️ Back-end:
-<div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-  <div align="center">
-    <img src="https://github.com/giiordanni.png" alt="giordanni" width="100">
-    <p>Giordanni Formiga</p>
-  </div>
-  <div align="center">
-    <img src="https://github.com/Luciano-Claudio.png" alt="Luciano" width="100">
-    <p>Luciano Cláudio</p>
-  </div>
-  <div align="center">
-    <img src="https://github.com/RogerCarvalhoUEPB.png" alt="Roger Carvalho" width="100">
-    <p>Roger Carvalho</p>
-  </div>
-</div>
+<table>
+  <tr>
+     <td align="center">
+      <img src="https://github.com/Luciano-Claudio.png" alt="Luciano" width="100"><br>
+      <b>Luciano Cláudio</b>
+    </td>
+     <td align="center">
+      <img src="https://github.com/giiordanni.png" alt="Giordanni" width="100"><br>
+      <b>Giordanni</b>
+    </td>
+    <td align="center">
+      <img src="https://github.com/RogerCarvalhoUEPB.png" alt="Roger Carvalho" width="100"><br>
+      <b>Roger Carvalho</b>
+    </td>
+  </tr>
+</table>
 
 ### 🎨 Front-end:
-<div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-  <div align="center">
-    <img src="https://github.com/aldoalbuquerquejr.png" alt="Aldo" width="100">
-    <p>Aldo Albuquerque</p>
-  </div>
-  <div align="center">
-    <img src="https://github.com/HenriqueFMA.png" alt="Henrique" width="100">
-    <p>Henrique Fortunato</p>
-  </div>
-  <div align="center">
-    <img src="https://github.com/DanilloDevys.png" alt="Danilo" width="100">
-    <p>Danilo Devys</p>
-  </div>
-</div>
+<table>
+  <tr>
+      <td align="center">
+      <img src="https://github.com/HenriqueFMA.png" alt="Henrrique" width="100"><br>
+      <b>Henrique Fortunato</b>
+    </td>
+    <td align="center">
+      <img src="https://github.com/aldoalbuquerquejr.png" alt="Aldo" width="100"><br>
+      <b>Aldo Albuquerque</b>
+    </td>
+    <td align="center">
+      <img src="https://github.com/DanilloDevys.png" alt="Danilo" width="100"><br>
+      <b>Danilo Devys</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
