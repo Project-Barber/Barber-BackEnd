@@ -4,10 +4,12 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import "express-async-errors";
+import {conectDataBase } from './src/database/db.js';
 
 import usuarioRoutes from "./src/routes/usuarioRoutes.js";
 
 dotenv.config();
+conectDataBase();
 
 const app = express();
 

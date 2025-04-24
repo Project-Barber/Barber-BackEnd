@@ -1,48 +1,64 @@
-import pool from "../database/db.js";
 import bcrypt from 'bcryptjs';
-import jwt from "jsonwebtoken";
-
-const formatDateForDatabase = (dateString) => {
-  const [day, month, year] = dateString.split('/');
-  return `${year}-${month}-${day}`; 
-};
+import userModels from '../models/userModels.js';
+import logger from '../utils/logger.js';
+import functionsBasic from '../utils/basicFunctions.js';
+import globalMiddlewares from '../middlewares/globalMiddlewares.js';
 
 const cadastrarUsuario = async (req, res) => {
+  logger.info("Cadastrando usuário");
   const { nome, data_nascimento, email, senha, endereco, telefone } = req.body;
 
   try {
-    const dataFormatada = formatDateForDatabase(data_nascimento);
+    if (!nome || !data_nascimento || !email || !senha || !endereco || !telefone) {
+      logger.error("Erro ao cadastrar usuário: Campos obrigatórios não preenchidos");
+      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    }
 
+    const usuarioExistente = await userModels.findUserByEmail(email);
+    if (usuarioExistente) {
+      logger.error("Erro ao cadastrar usuário: Email já cadastrado");
+      return res.status(409).json({ error: "Email já cadastrado" });
+    }
+
+    const dataFormatada = await functionsBasic.formatDate(data_nascimento);
     const hashedPassword = await bcrypt.hash(senha, 10);
-    const result = await pool.query(
-      "INSERT INTO barber.usuarios (nome, data_nascimento, email, senha, endereco, telefone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [nome, dataFormatada, email, hashedPassword, endereco, telefone]
-    );
 
-    res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result.rows[0] });
+    const result = await userModels.createUser(nome, dataFormatada, email, hashedPassword, endereco, telefone);
+    if (!result) {
+      logger.error("Erro ao cadastrar usuário: Falha ao criar usuário");
+      return res.status(500).json({ error: "Erro ao cadastrar usuário" });
+    }
+    logger.info(result);
+    const token = await globalMiddlewares.generateToken(result.id, result.email);
+
+    logger.info("Usuário cadastrado com sucesso");
+    res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result, token_usuario: token });
+
   } catch (error) {
     console.error("Erro ao cadastrar usuário:", error);
     res.status(500).json({ error: "Erro ao cadastrar usuário" });
   }
+
 };
 
+
 const loginUsuario = async (req, res) => {
+  logger.info("Realizando login do usuário");
   const { email, senha } = req.body;
 
   try {
-    const result = await pool.query("SELECT * FROM barber.usuarios WHERE email = $1", [email]);
-    const usuario = result.rows[0];
-
-    if (!usuario) return res.status(404).json({ error: "Usuário não encontrado" });
+    const usuario = await userModels.findUserByEmail(email);
 
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
 
-    if (!senhaCorreta) return res.status(401).json({ error: "Senha incorreta" });
+    if (!usuario || !senhaCorreta) {
+      logger.error("Erro ao fazer login: Usuário ou senha incorretos");
+      return res.status(404).json({ error: "Usuárioou senha incorretos" });
+    }
+      
+    const token = globalMiddlewares.generateToken(usuario);
 
-    const token = jwt.sign({ id: usuario.id, email: usuario.email }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-
+    logger.info("Login realizado com sucesso");
     res.status(200).json({ message: "Login bem-sucedido", token });
   } catch (error) {
     res.status(500).json({ error: "Erro ao fazer login" });
