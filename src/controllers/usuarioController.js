@@ -44,12 +44,43 @@ const cadastrarUsuario = async (req, res) => {
 
 const cadastrarBarbeiro = async (req, res) => {
   logger.info("Cadastrando barbeiro");
-  const { nome, data_nascimento, email, senha, endereco, telefone, descricao, avaliacao, imagem } = req.body;
+  const {
+    nome,
+    data_nascimento,
+    email,
+    senha,
+    endereco,
+    telefone,
+    descricao,
+    avaliacao,
+    imagem,
+  } = req.body;
 
   try {
-    if (!nome || !data_nascimento || !email || !senha || !endereco || !telefone || !descricao || !avaliacao || !imagem) {
-      logger.error("Erro ao cadastrar barbeiro: Campos obrigatórios não preenchidos");
-      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    const camposObrigatorios = {
+      nome,
+      data_nascimento,
+      email,
+      senha,
+      endereco,
+      telefone,
+      descricao,
+      avaliacao,
+      imagem,
+    };
+
+    const camposFaltando = Object.entries(camposObrigatorios)
+      .filter(([_, valor]) => valor === undefined || valor === null || valor === '')
+      .map(([chave]) => chave);
+
+    if (camposFaltando.length > 0) {
+      logger.error(
+        `Erro ao cadastrar barbeiro: Campos obrigatórios não preenchidos: ${camposFaltando.join(', ')}`
+      );
+      return res.status(400).json({
+        error: "Todos os campos são obrigatórios",
+        camposFaltando,
+      });
     }
 
     const usuarioExistente = await userModels.findUserByEmail(email);
@@ -83,22 +114,59 @@ const cadastrarBarbeiro = async (req, res) => {
     const token = await globalMiddlewares.generateToken(result.id, result.email);
 
     logger.info("Barbeiro cadastrado com sucesso");
-    res.status(201).json({ message: "Barbeiro cadastrado com sucesso", usuario: result, token});
+    return res.status(201).json({
+      message: "Barbeiro cadastrado com sucesso",
+      usuario: result,
+      token,
+    });
 
   } catch (error) {
-    console.error("Erro ao cadastrar barbeiro:", error);
-    res.status(500).json({ error: "Erro ao cadastrar barbeiro" });
+    logger.error("Erro ao cadastrar barbeiro:", error);
+    return res.status(500).json({ error: "Erro ao cadastrar barbeiro" });
   }
 };
 
-const cadastrarSecretario = async (req, res) => {
+
+ const cadastrarSecretario = async (req, res) => {
   logger.info("Cadastrando secretário");
-  const { nome, data_nascimento, email, senha, endereco, telefone, descricao, avaliacao, imagem } = req.body;
+
+  const {
+    nome,
+    data_nascimento,
+    email,
+    senha,
+    endereco,
+    telefone,
+    descricao,
+    avaliacao,
+    imagem,
+  } = req.body;
 
   try {
-    if (!nome || !data_nascimento || !email || !senha || !endereco || !telefone || !descricao || !avaliacao || !imagem) {
-      logger.error("Erro ao cadastrar secretário: Campos obrigatórios não preenchidos");
-      return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+    const camposObrigatorios = {
+      nome,
+      data_nascimento,
+      email,
+      senha,
+      endereco,
+      telefone,
+      descricao,
+      avaliacao,
+      imagem,
+    };
+
+    const camposFaltando = Object.entries(camposObrigatorios)
+      .filter(([_, valor]) => valor === undefined || valor === null || valor === '')
+      .map(([chave]) => chave);
+
+    if (camposFaltando.length > 0) {
+      logger.error(
+        `Erro ao cadastrar secretário: Campos obrigatórios não preenchidos: ${camposFaltando.join(', ')}`
+      );
+      return res.status(400).json({
+        error: "Todos os campos são obrigatórios",
+        camposFaltando,
+      });
     }
 
     const usuarioExistente = await userModels.findUserByEmail(email);
@@ -119,7 +187,7 @@ const cadastrarSecretario = async (req, res) => {
       telefone,
       "secretary",
       descricao,
-      0,
+      0, // ou parseFloat(avaliacao), se desejar usar o valor recebido
       imagem
     );
 
@@ -128,15 +196,22 @@ const cadastrarSecretario = async (req, res) => {
       return res.status(500).json({ error: "Erro ao cadastrar secretário" });
     }
 
+    logger.info(result);
     const token = await globalMiddlewares.generateToken(result.id, result.email);
 
     logger.info("Secretário cadastrado com sucesso");
-    res.status(201).json({ message: "Secretário cadastrado com sucesso", usuario: result, token});
+    return res.status(201).json({
+      message: "Secretário cadastrado com sucesso",
+      usuario: result,
+      token,
+    });
+
   } catch (error) {
-    logger.error("Erro ao cadastrar secretário:", error);
-    res.status(500).json({ error: "Erro ao cadastrar secretário" });
+    logger.error(`Erro ao cadastrar secretário: ${error.message}`);
+    return res.status(500).json({ error: "Erro ao cadastrar secretário" });
   }
 };
+
 
 
 
