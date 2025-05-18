@@ -70,7 +70,7 @@ Este repositório contém o **back-end** da aplicação de agendamento de horár
   <tr>
       <td align="center">
       <img src="https://github.com/HenriqueFMA.png" alt="Henrrique" width="100"><br>
-      <b>Henrique Fortunato</b>
+      <b>Henrique Furtado</b>
     </td>
     <td align="center">
       <img src="https://github.com/aldoalbuquerquejr.png" alt="Aldo" width="100"><br>
