@@ -7,10 +7,10 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: teste123456
+      POSTGRES_PASSWORD: 14112003
       POSTGRES_DB: barberdb
     ports:
-      - "5433:5433"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://postgres:teste123456@db:5432/barberdb
+      DATABASE_URL: postgres://postgres:14112003@db:5432/barberdb
       JWT_SECRET: chavesecretaprapensardepois
 
 volumes:
