@@ -8,5 +8,12 @@ CREATE TABLE IF NOT EXISTS barber.usuarios (
   senha VARCHAR(255) NOT NULL,
   endereco TEXT,
   telefone VARCHAR(20),
+  tipo_usuario VARCHAR(20) DEFAULT 'user',
+    CHECK (tipo_usuario IN ('user', 'barber', 'secretary', 'admin')),
+  descricao TEXT,
+  avaliacao NUMERIC DEFAULT 0,
+  imagem TEXT,
   criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
