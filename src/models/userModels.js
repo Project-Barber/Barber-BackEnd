@@ -39,5 +39,41 @@ const findUserByEmail = async (email) => {
     return result.rows[0];
 }
 
-export default { createUser, findUserByEmail, createBarber, createSecretary };
+const findAllUsers = async() =>{
+    const result = await pool.query("SELECT id,nome, data_nascimento,  email, endereco, telefone, tipo_usuario, descricao, imagem FROM barber.usuarios");
+    if (result.rows.length === 0) {
+        return null;
+    }
+    return result.rows;
+}
+const findUserByID = async (id) => {
+    const result = await pool.query("SELECT id,nome, data_nascimento,  email, endereco, telefone, tipo_usuario, descricao, imagem FROM barber.usuarios WHERE id = $1", [id]);
+    if (result.rows.length === 0) {
+        return null;
+    }
+    return result.rows[0];
+}
+const updateUserByID = async (id, updateFields) => {
+    const fields = Object.keys(updateFields);
+    const values = Object.values(updateFields);
+
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+
+    const result = await pool.query(
+        `UPDATE barber.usuarios SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
+        [...values, id]
+    );
+    if (result.rows.length === 0) {
+        return null;
+    }
+    return result.rows[0];
+}
+
+const deletUserByID = async (id) => {
+    const result = await pool.query("DELETE FROM barber.usuarios WHERE id = $1", [id]);
+    return result.rowCount;
+}
+
+
+export default { createUser, findUserByEmail, createBarber, createSecretary, findAllUsers, findUserByID, updateUserByID,deletUserByID };
 
