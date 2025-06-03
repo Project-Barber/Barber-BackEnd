@@ -161,7 +161,7 @@ const loginUsuario = async (req, res) => {
       return res.status(404).json({ error: "Usuárioou senha incorretos" });
     }
       
-    const token = globalMiddlewares.generateToken(usuario.id, usuario.email, usuario.tipo_usuario);
+    const token = await globalMiddlewares.generateToken(usuario.id, usuario.email, usuario.tipo_usuario);
 
     await functionsBasic.generate_cookie(res, token);
 
@@ -174,7 +174,7 @@ const loginUsuario = async (req, res) => {
 
 
 const logout = (req, res) => {
-    res.clearCookie('jwt', {
+    res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',

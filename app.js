@@ -16,12 +16,18 @@ conectDataBase();
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true, 
+  optionsSuccessStatus: 204,
+};
+
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(cors(corsOptions));
 
 app.use("/usuarios", usuarioRoutes);
 

@@ -11,6 +11,7 @@ const generate_cookie = async (res, token) => {
         maxAge: 60 * 60 * 12 * 1000, 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',
+        path: '/',
     });
     return res;
 }
