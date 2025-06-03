@@ -7,6 +7,8 @@ import "express-async-errors";
 import {conectDataBase } from './src/database/db.js';
 
 import usuarioRoutes from "./src/routes/usuarioRoutes.js";
+import agendamentoRoutes from "./src/routes/agendamentoRoutes.js";
+
 
 dotenv.config();
 conectDataBase();
@@ -18,7 +20,10 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
+
 app.use("/usuarios", usuarioRoutes);
+
+app.use("/agendamentos", agendamentoRoutes);
 
 app.get("/", (req, res) => {
   res.send("API da barbearia funcionando com segurança! 🔐✂️");
