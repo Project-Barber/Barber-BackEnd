@@ -8,4 +8,14 @@ const pool = new pg.Pool({
   options: '-c search_path=barber'
 });
 
-export default pool;
+const conectDataBase = async () => {
+  try {
+      console.log('\nConnecting to database...');
+      await pool.query('SELECT 1');
+      console.log('Connected to database\n');
+  }catch(error) {
+      console.log('Error connecting to database:', error);
+  };
+};
+
+export {pool, conectDataBase};
