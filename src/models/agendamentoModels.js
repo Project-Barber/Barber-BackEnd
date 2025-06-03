@@ -82,7 +82,12 @@ const buscarHorariosDisponiveis = async (id_barbeiro, data) => {
 };
 
 
+const getServicos = async () => {
+  const result = await pool.query("SELECT * FROM barber.servicos");
+  return result.rows;
+};
 
 
 
-export default { horariosPadrao, calcularDuracaoTotal, calcularHoraFim, criarAgendamento, buscarHorariosDisponiveis };
+
+export default { horariosPadrao, calcularDuracaoTotal, calcularHoraFim, criarAgendamento, buscarHorariosDisponiveis, getServicos };

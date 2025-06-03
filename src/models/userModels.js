@@ -53,19 +53,15 @@ const findUserByID = async (id) => {
     }
     return result.rows[0];
 }
-const updateUserByID = async (id, nome, data_nascimento, email, senha, endereco, telefone) => {
-    const user = await findUserByID(id);
-    const auxiliar = {
-        nome: nome || user.nome,
-        data_nascimento: data_nascimento || user.data_nascimento,
-        email: email || user.email,
-        senha: senha || user.senha,
-        endereco: endereco || user.endereco,
-        telefone: telefone || user.telefone,
-    }
+const updateUserByID = async (id, updateFields) => {
+    const fields = Object.keys(updateFields);
+    const values = Object.values(updateFields);
+
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+
     const result = await pool.query(
-        "UPDATE barber.usuarios SET nome = $1, data_nascimento = $2, email = $3, senha = $4, endereco = $5, telefone = $6 WHERE id = $7 RETURNING *",
-        [auxiliar.nome, auxilia.data_nascimento, auxiliar.email, auxiliar.senha, auxiliar.endereco, auxiliar.telefone, id]
+        `UPDATE barber.usuarios SET ${setClause} WHERE id = $${fields.length + 1} RETURNING *`,
+        [...values, id]
     );
     if (result.rows.length === 0) {
         return null;
@@ -75,10 +71,9 @@ const updateUserByID = async (id, nome, data_nascimento, email, senha, endereco,
 
 const deletUserByID = async (id) => {
     const result = await pool.query("DELETE FROM barber.usuarios WHERE id = $1", [id]);
-    if (result.rowCount === 0) {
-        return null;
-    }
     return result.rowCount;
 }
+
+
 export default { createUser, findUserByEmail, createBarber, createSecretary, findAllUsers, findUserByID, updateUserByID,deletUserByID };
 

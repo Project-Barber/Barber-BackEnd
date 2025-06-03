@@ -8,8 +8,8 @@ import globalMiddlewares from '../middlewares/globalMiddlewares.js';
 const cadastrarUsuario = async (req, res) => {
   logger.info("Cadastrando usuário");
   const { nome, data_nascimento, email, senha, endereco, telefone } = req.body;
-
   try {
+
     if (!nome || !data_nascimento || !email || !senha || !endereco || !telefone) {
       logger.error("Erro ao cadastrar usuário: Campos obrigatórios não preenchidos");
       return res.status(400).json({ error: "Todos os campos são obrigatórios" });
@@ -30,10 +30,12 @@ const cadastrarUsuario = async (req, res) => {
       return res.status(500).json({ error: "Erro ao cadastrar usuário" });
     }
     logger.info(result);
-    const token = await globalMiddlewares.generateToken(result.id, result.email);
+    const token = await globalMiddlewares.generateToken(result.id, email, result.tipo_usuario);
+
+    await functionsBasic.generate_cookie(res, token);
 
     logger.info("Usuário cadastrado com sucesso");
-    res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result, token_usuario: token });
+    res.status(201).json({ message: "Usuário cadastrado com sucesso", usuario: result, });
 
   } catch (error) {
     console.error("Erro ao cadastrar usuário:", error);
@@ -41,6 +43,7 @@ const cadastrarUsuario = async (req, res) => {
   }                 
 
 };
+
 
 const cadastrarBarbeiro = async (req, res) => {
   logger.info("Cadastrando barbeiro");
@@ -80,16 +83,19 @@ const cadastrarBarbeiro = async (req, res) => {
     }
 
     logger.info(result);
-    const token = await globalMiddlewares.generateToken(result.id, result.email);
+    const token = await globalMiddlewares.generateToken(result.id, result.email, result.tipo_usuario);
+
+    await functionsBasic.generate_cookie(res, token);
 
     logger.info("Barbeiro cadastrado com sucesso");
-    res.status(201).json({ message: "Barbeiro cadastrado com sucesso", usuario: result, token});
+    res.status(201).json({ message: "Barbeiro cadastrado com sucesso", usuario: result});
 
   } catch (error) {
     console.error("Erro ao cadastrar barbeiro:", error);
     res.status(500).json({ error: "Erro ao cadastrar barbeiro" });
   }
 };
+
 
 const cadastrarSecretario = async (req, res) => {
   logger.info("Cadastrando secretário");
@@ -128,16 +134,17 @@ const cadastrarSecretario = async (req, res) => {
       return res.status(500).json({ error: "Erro ao cadastrar secretário" });
     }
 
-    const token = await globalMiddlewares.generateToken(result.id, result.email);
+    const token = await globalMiddlewares.generateToken(result.id, result.email, result.tipo_usuario);
+
+    await functionsBasic.generate_cookie(res, token);
 
     logger.info("Secretário cadastrado com sucesso");
-    res.status(201).json({ message: "Secretário cadastrado com sucesso", usuario: result, token});
+    res.status(201).json({ message: "Secretário cadastrado com sucesso", usuario: result});
   } catch (error) {
     logger.error("Erro ao cadastrar secretário:", error);
     res.status(500).json({ error: "Erro ao cadastrar secretário" });
   }
 };
-
 
 
 const loginUsuario = async (req, res) => {
@@ -154,7 +161,9 @@ const loginUsuario = async (req, res) => {
       return res.status(404).json({ error: "Usuárioou senha incorretos" });
     }
       
-    const token = globalMiddlewares.generateToken(usuario);
+    const token = globalMiddlewares.generateToken(usuario.id, usuario.email, usuario.tipo_usuario);
+
+    await functionsBasic.generate_cookie(res, token);
 
     logger.info("Login realizado com sucesso");
     res.status(200).json({ message: "Login bem-sucedido", token: token, tipo_usuario: usuario.tipo_usuario });
@@ -162,6 +171,20 @@ const loginUsuario = async (req, res) => {
     res.status(500).json({ error: "Erro ao fazer login" });
   }
 };
+
+
+const logout = (req, res) => {
+    res.clearCookie('jwt', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        path: '/',
+    })
+    res.status(200).send({
+        message: 'Logout successful'
+    });
+}
+
 
 const exibirUsuarios = async(req, res) => {
   logger.info("Exibindo todos os usuários");
@@ -178,63 +201,93 @@ const exibirUsuarios = async(req, res) => {
     res.status(500).json({ error: "Erro ao exibir usuários" });
   }
 }
+
+
 const exibirUsuarioPorId = async(req, res) => {
   logger.info("Exibindo usuário por ID");
-  const { id } = req.params;
+  const userId = req.userId;
+
   try{
-    const usuario = await userModels.findUserByID(id);
+    const usuario = await userModels.findUserByID(userId);
     if (!usuario) {
       logger.error("Erro ao exibir usuário: Usuário não encontrado");
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
+
     logger.info("Usuário exibido com sucesso");
     res.status(200).json({ message: "Usuário exibido com sucesso", usuario });
-  }
-  catch(error){
+
+  } catch(error){
     logger.error("Erro ao exibir usuário:", error);
     res.status(500).json({ error: "Erro ao exibir usuário" });
   }
 }
+
+
 const atualizarUsuario = async(req, res) => {
   logger.info("Atualizando usuário");
-  const { id } = req.params;
-  const { nome, data_nascimento, email, senha, endereco, telefone } = req.body;
+  const userId = req.userId;
+  const body = req.body;
 
-  try{
-    const usuarioExistente = await userModels.findUserByID(id);
+  try {
+    
+    const updateFields = {};
+    for (const key in body) {
+        if (body[key] !== undefined && body[key] !== null) {
+            updateFields[key] = body[key];
+        }
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+        logger.error('No fields provided for update');
+        return res.status(400).json({ error: "Nenhum campo fornecido para atualização" });
+    }
+
+    const usuarioExistente = await userModels.findUserByID(userId);
     if (!usuarioExistente) {
       logger.error("Erro ao atualizar usuário: Usuário não encontrado");
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    const usuarioAtualizado = await userModels.updateUserByID(id, nome, data_nascimento, email, senha, endereco, telefone);
+    const usuarioAtualizado = await userModels.updateUserByID(userId, updateFields);
     if (!usuarioAtualizado) {
       logger.error("Erro ao atualizar usuário: Falha ao atualizar usuário");
       return res.status(500).json({ error: "Erro ao atualizar usuário" });
     }
+
+
     logger.info("Usuário atualizado com sucesso");
     res.status(200).json({ message: "Usuário atualizado com sucesso", usuario: usuarioAtualizado });
-  }catch(error){
+  } catch(error){
     logger.error("Erro ao atualizar usuário:", error);
     res.status(500).json({ error: "Erro ao atualizar usuário" });
   }
 }
+
+
 const deletarUsuario = async(req, res) => {
   logger.info("Deletando usuário");
-  const { id } = req.params;
+  const userId = req.userId;
+
   try{
-    const usuarioExistente = await userModels.findUserByID(id);
+    const usuarioExistente = await userModels.findUserByID(userId);
     if (!usuarioExistente) {
       logger.error("Erro ao deletar usuário: Usuário não encontrado");
       return res.status(404).json({ error: "Usuário não encontrado" });
     }
 
-    await userModels.deleteUserByID(id);
+    const deleted = await userModels.deletUserByID(userId);
+    if (!deleted) {
+      logger.error("Erro ao deletar usuário: Falha ao deletar usuário");
+      return res.status(500).json({ error: "Erro ao deletar usuário" });
+    }
+
     logger.info("Usuário deletado com sucesso");
     res.status(200).json({ message: "Usuário deletado com sucesso" });
-  }catch(error){
+  } catch(error) {
     logger.error("Erro ao deletar usuário:", error);
     res.status(500).json({ error: "Erro ao deletar usuário" });
   }
 }
-export default { cadastrarUsuario, loginUsuario, cadastrarBarbeiro, cadastrarSecretario, exibirUsuarios, exibirUsuarioPorId, atualizarUsuario,deletarUsuario };
+
+export default { cadastrarUsuario, loginUsuario, logout, cadastrarBarbeiro, cadastrarSecretario, exibirUsuarios, exibirUsuarioPorId, atualizarUsuario,deletarUsuario };

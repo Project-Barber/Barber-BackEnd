@@ -5,17 +5,21 @@ import functionsBasic from '../utils/basicFunctions.js';
 
 const criarAgendamento = async (req, res) => {
   try {
-    const { id_usuario, id_barbeiro, data, hora_inicio, ids_servicos } = req.body;
+    logger.info("Iniciando criação de agendamento");
+    const {id_barbeiro, data, hora_inicio, ids_servicos } = req.body;
+    const id_usuario = req.userId;
 
-    if (!id_usuario || !id_barbeiro || !data || !hora_inicio || !ids_servicos?.length) {
+    if (!data || !hora_inicio || !ids_servicos?.length) {
       return res.status(400).json({ error: "Todos os campos são obrigatórios." });
     }
     
     const dataFormatada = await functionsBasic.formatDate(data);
+
     const user = await userModels.findUserByID(id_usuario);
     if (!user || id_usuario === id_barbeiro) {
         return res.status(400).json({ error: "Usuário inválido" });
     }
+
     const barbeiro = await userModels.findUserByID(id_barbeiro);
     if (!barbeiro || barbeiro.tipo_usuario !== 'barber') {
         return res.status(400).json({ error: "Barbeiro inválido" });
@@ -96,12 +100,22 @@ const horariosDisponiveis = async (req, res) => {
     res.status(200).json({ horarios_disponiveis: horarios });
 
   } catch (error) {
-    console.error("Erro ao buscar horários disponíveis:", error);
+    logger.error("Erro ao buscar horários disponíveis:", error);
     res.status(500).json({ error: "Erro ao buscar horários disponíveis" });
   }
 };
 
 
+const getServicos = async (req, res) => {
+  logger.info("Procurando serviços disponíveis");
+  try {
+    const services = await agendamentoModels.getServicos();
+    res.status(200).json({ services });
+  } catch (error) {
+    logger.error("Erro ao buscar serviços:", error);
+    res.status(500).json({ error: "Erro ao buscar serviços" });
+  }
+}
 
 
-export default { criarAgendamento, horariosDisponiveis };
+export default { criarAgendamento, horariosDisponiveis, getServicos };
